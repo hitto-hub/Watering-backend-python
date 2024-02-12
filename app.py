@@ -24,7 +24,7 @@ def index():
     return 'Hello!'
 
 # GETメソッドでデータを取得
-@app.route('/api', methods=['GET'])
+@app.route('/api/data', methods=['GET'])
 def get_tweet():
     val = Data.query.all()
     return {
@@ -39,7 +39,7 @@ def get_tweet():
     }
 
 # POSTメソッドでデータを追加
-@app.route('/api', methods=['POST'])
+@app.route('/api/data', methods=['POST'])
 def post_tweet():
     data = request.json["val"] #POSTメソッド のデータを取得
     cre = Data(val = data)
