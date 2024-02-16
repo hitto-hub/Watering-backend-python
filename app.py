@@ -1,6 +1,7 @@
 import datetime
 from flask import Flask, g, request
 from flask_sqlalchemy import SQLAlchemy
+import pytz
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -10,7 +11,7 @@ db = SQLAlchemy(app)
 class Data(db.Model):
     __tablename__ = 'data'
     id = db.Column(db.Integer, unique=True, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.now(pytz.timezone("Asia/Tokyo")))
     val = db.Column(db.Integer, nullable=False)
     def __repr__(self):
         return '<Data %r>' % self.val
@@ -18,7 +19,7 @@ class Data(db.Model):
 class NoticeData(db.Model):
     __tablename__ = 'notice_data'
     id = db.Column(db.Integer, unique=True, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.now(pytz.timezone("Asia/Tokyo")))
     notice = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
@@ -27,7 +28,7 @@ class NoticeData(db.Model):
 class FlagData(db.Model):
     __tablename__ = 'flag_data'
     id = db.Column(db.Integer, unique=True, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.now(pytz.timezone("Asia/Tokyo")))
     flag = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
@@ -37,9 +38,21 @@ class FlagData(db.Model):
 with app.app_context():
     db.create_all()
 
+# このAPIは以下のようなエンドポイントを持つ
+# それぞれのエンドポイントに対してGETとPOSTメソッドを用意する
+#  api/
+#   val
+#   notice
+#   flag
+# apiの説明
 @app.route('/')
 def index():
-    return 'Hello!'
+    return (
+        "api/val: GETでデータを取得, POSTでデータを追加\n"
+        "api/notice: GETでデータを取得, POSTでデータを追加\n"
+        "api/flag: GETでデータを取得, POSTでデータを追加\n"
+    )
+
 
 # GETメソッドでデータを取得
 @app.route('/api/val', methods=['GET'])
