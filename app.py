@@ -59,6 +59,7 @@ def index():
 def get_val():
     val = Data.query.all()
     return {
+        "num_results": f"{len(val)}",
         "data": [
             {
                 "id": v.id,
