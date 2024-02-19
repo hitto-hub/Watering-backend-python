@@ -84,6 +84,7 @@ def post_val():
 def get_notice():
     notice = NoticeData.query.all()
     return {
+        "num_results": f"{len(notice)}",
         "data": [
             {
                 "id": v.id,
