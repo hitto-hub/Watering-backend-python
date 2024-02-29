@@ -51,8 +51,10 @@ def index():
         "api/val: GETでデータを取得, POSTでデータを追加\n"
         "api/notice: GETでデータを取得, POSTでデータを追加\n"
         "api/flag: GETでデータを取得, POSTでデータを追加\n"
+        "api/flag?id=1: GETでid=1のデータを取得\n"
+        "api/flag/last: GETで最新のデータを取得\n"
+        "api/flag/count: GETでデータの個数を取得\n"
     )
-
 
 # GETメソッドでデータを取得
 @app.route('/api/val', methods=['GET'])
@@ -106,38 +108,46 @@ def post_notice():
     db.session.commit()
     return 'post notice ok\n '
 
+# GETメソッドでデータを取得
+# /flag?id=1
+# でid=1のデータを取得
+# idがない場合は全てのデータを取得
+@app.route('/api/flag', methods=['GET'])
+def get_flag():
+    id = request.args.get('id')
+    if id is None:
+        flag = FlagData.query.all()
+        return {
+            "num_results": f"{len(flag)}",
+            "data": [
+                {
+                    "id": v.id,
+                    "timestamp": v.timestamp,
+                    "flag": v.flag
+                }
+                for v in flag
+            ]
+        }
+    else:
+        flag = FlagData.query.filter_by(id=id).all()
+        return {
+            "num_results": f"{len(flag)}",
+            "data": [
+                {
+                    "id": v.id,
+                    "timestamp": v.timestamp,
+                    "flag": v.flag
+                }
+                for v in flag
+            ]
+        }
 
-# # GETメソッドでデータを取得
-# # 変更するかも
-# @app.route('/api/flag', methods=['GET'])
-# def get_flag():
-#     flag = FlagData.query.all()
-#     return {
-#         "data": [
-#             {
-#                 "id": v.id,
-#                 "timestamp": v.timestamp,
-#                 "flag": v.flag
-#             }
-#             for v in flag
-#         ]
-#     }
-# @app.route('/api/flag', methods=['GET'])
-# def get_post_flag():
-#     data = request.json["flag"] #POSTメソッド のデータを取得
-#     timestamp = datetime.now(pytz.timezone("Asia/Tokyo"))
-#     cre = FlagData(flag = data, timestamp = timestamp)
-#     db.session.add(cre)
-#     db.session.commit()
-#     return 'post flag ok\n '
-
-
+# GETメソッドで最新のデータを取得
 @app.route('/api/flag/last', methods=['GET'])
 def get_flag_last():
     flag = FlagData.query.all()
     # 1 or 0で返す
     return f"{flag[-1].flag}"
-
 
 # GETメソッドでデータの個数を取得
 @app.route('/api/flag/count', methods=['GET'])
