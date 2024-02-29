@@ -107,21 +107,43 @@ def post_notice():
     return 'post notice ok\n '
 
 
-# GETメソッドでデータを取得
-# 変更するかも
-@app.route('/api/flag', methods=['GET'])
-def get_flag():
+# # GETメソッドでデータを取得
+# # 変更するかも
+# @app.route('/api/flag', methods=['GET'])
+# def get_flag():
+#     flag = FlagData.query.all()
+#     return {
+#         "data": [
+#             {
+#                 "id": v.id,
+#                 "timestamp": v.timestamp,
+#                 "flag": v.flag
+#             }
+#             for v in flag
+#         ]
+#     }
+# @app.route('/api/flag', methods=['GET'])
+# def get_post_flag():
+#     data = request.json["flag"] #POSTメソッド のデータを取得
+#     timestamp = datetime.now(pytz.timezone("Asia/Tokyo"))
+#     cre = FlagData(flag = data, timestamp = timestamp)
+#     db.session.add(cre)
+#     db.session.commit()
+#     return 'post flag ok\n '
+
+
+@app.route('/api/flag/last', methods=['GET'])
+def get_flag_last():
     flag = FlagData.query.all()
-    return {
-        "data": [
-            {
-                "id": v.id,
-                "timestamp": v.timestamp,
-                "flag": v.flag
-            }
-            for v in flag
-        ]
-    }
+    # 1 or 0で返す
+    return f"{flag[-1].flag}"
+
+
+# GETメソッドでデータの個数を取得
+@app.route('/api/flag/count', methods=['GET'])
+def get_flag_count():
+    flag = FlagData.query.all()
+    return f"{len(flag)}"
 
 # POSTメソッドでデータを追加
 @app.route('/api/flag', methods=['POST'])
@@ -131,7 +153,9 @@ def post_flag():
     cre = FlagData(flag = data, timestamp = timestamp)
     db.session.add(cre)
     db.session.commit()
-    return 'post flag ok\n '
+    return {
+        "status": "success",
+    }
 
 if __name__ == '__main__':
     app.run()
