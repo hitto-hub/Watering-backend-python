@@ -38,23 +38,60 @@ class FlagData(db.Model):
 with app.app_context():
     db.create_all()
 
-# このAPIは以下のようなエンドポイントを持つ
-# それぞれのエンドポイントに対してGETとPOSTメソッドを用意する
-#  api/
-#   val
-#   notice
-#   flag
-# apiの説明
+# valを使ってグラフを表示する
 @app.route('/')
 def index():
-    return (
-        "api/val: GETでデータを取得, POSTでデータを追加\n"
-        "api/notice: GETでデータを取得, POSTでデータを追加\n"
-        "api/flag: GETでデータを取得, POSTでデータを追加\n"
-        "api/flag?id=1: GETでid=1のデータを取得\n"
-        "api/flag/last: GETで最新のデータを取得\n"
-        "api/flag/count: GETでデータの個数を取得\n"
-    )
+    return '''
+    <html>
+        <head>
+            <title>Watering</title>
+            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        </head>
+        <body>
+            <h1>Watering</h1>
+            <div id="graph"></div>
+            <script>
+                fetch('/api/val')
+                .then(response => response.json())
+                .then(data => {
+                    const x = data.data.slice(-300).map(v => new Date(v.timestamp));
+                    const y = data.data.slice(-300).map(v => v.val);
+                    const trace = {
+                        x: x,
+                        y: y,
+                        type: 'scatter'
+                    };
+                    fetch('/api/notice')
+                    .then(response => response.json())
+                    .then(noticeData => {
+                        const notice = noticeData.data.filter(v => v.notice === 1);
+                        const noticeX = notice.map(v => new Date(v.timestamp));
+                        const noticeY = notice.map(v => 0);
+                        const noticeTrace = {
+                            x: noticeX,
+                            y: noticeY,
+                            mode: 'markers',
+                            type: 'scatter',
+                            name: 'Notice'
+                        };
+                        const layout = {
+                            title: 'Graph',
+                            xaxis: {
+                                title: 'Time',
+                                automargin: true
+                            },
+                            yaxis: {
+                                title: 'Value'
+                            }
+                        };
+                        Plotly.newPlot('graph', [trace, noticeTrace], layout);
+                    });
+                });
+            </script>
+        </body>
+    </html>
+    '''
+
 
 # GETメソッドでデータを取得
 @app.route('/api/val', methods=['GET'])
