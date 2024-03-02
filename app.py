@@ -92,6 +92,17 @@ def index():
     </html>
     '''
 
+#delete all data
+@app.route('/api', methods=['DELETE'])
+def delete_all():
+    try:
+        Data.query.delete()
+        NoticeData.query.delete()
+        FlagData.query.delete()
+        db.session.commit()
+        return 'delete all data\n'
+    except:
+        return 'delete all data failed\n'
 
 # GETメソッドでデータを取得
 @app.route('/api/val', methods=['GET'])
