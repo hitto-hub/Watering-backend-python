@@ -183,8 +183,11 @@ def get_flag():
 @app.route('/api/flag/last', methods=['GET'])
 def get_flag_last():
     flag = FlagData.query.all()
-    # 1 or 0で返す
-    return f"{flag[-1].flag}"
+    if flag:
+        # 1 or 0で返す
+        return f"{flag[-1].flag}"
+    else:
+        return "No data available"
 
 # GETメソッドでデータの個数を取得
 @app.route('/api/flag/count', methods=['GET'])
