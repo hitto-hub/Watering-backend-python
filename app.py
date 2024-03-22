@@ -54,8 +54,8 @@ def index():
                 fetch('/api/val')
                 .then(response => response.json())
                 .then(data => {
-                    const x = data.data.slice(-300).map(v => new Date(v.timestamp));
-                    const y = data.data.slice(-300).map(v => v.val);
+                    const x = data.data.slice(-1000).map(v => new Date(v.timestamp));
+                    const y = data.data.slice(-1000).map(v => v.val);
                     const trace = {
                         x: x,
                         y: y,
