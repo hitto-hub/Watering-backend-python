@@ -125,7 +125,7 @@ def get_val():
 def post_val():
     data = request.json["val"] #POSTメソッド のデータを取得
     timestamp = datetime.now(ZoneInfo("Asia/Tokyo"))
-    timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    timestamp_str = timestamp.strftime('%Y/%m/%d %H:%M:%S')
     cre = Data(val = data, timestamp = timestamp_str)
     db.session.add(cre)
     db.session.commit()
@@ -152,7 +152,7 @@ def get_notice():
 def post_notice():
     data = request.json["notice"] #POSTメソッド のデータを取得
     timestamp = datetime.now(ZoneInfo("Asia/Tokyo"))
-    timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    timestamp_str = timestamp.strftime('%Y/%m/%d %H:%M:%S')
     cre = NoticeData(notice = data, timestamp = timestamp_str)
     db.session.add(cre)
     db.session.commit()
@@ -213,7 +213,7 @@ def get_flag_count():
 def post_flag():
     data = request.json["flag"] #POSTメソッド のデータを取得
     timestamp = datetime.now(ZoneInfo("Asia/Tokyo"))
-    timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    timestamp_str = timestamp.strftime('%Y/%m/%d %H:%M:%S')
     cre = FlagData(flag = data, timestamp = timestamp_str)
     db.session.add(cre)
     db.session.commit()
