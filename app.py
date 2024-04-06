@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask, g, request, render_template
+from flask import Flask, g, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_apscheduler import APScheduler
 from zoneinfo import ZoneInfo
@@ -70,9 +70,148 @@ with app.app_context():
 
 weekdays_set = ["mon", "tue", "wed", "thu", "fri", "sat", "sun", "all"]
 # グラフを表示する
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    # /?address=1
+    # addressが指定されている場合は、そのaddressのデータを取得
+    # 指定されていない場合は、全addressのデータを取得
+    address = request.args.get('address')
+
+    # # ,区切りでaddressを取得
+    # if designated_addresses:
+    #     designated_addresses = designated_addresses.split(',')
+    # else:
+    #     designated_addresses = []
+    # print(designated_addresses)
+
+    # name = request.args.get('name')
+    print(f"addresses : {address}")
+    # print(f"name : {name}")
+    # if not address and name: # nameのみ
+    #     print(f"nameだけだお")
+    #     # name -> address
+    #     try:
+    #         # nameがuniqueじゃない場合、最初に見つかったaddressを取得 <- 問題あり
+    #         # 解決）nameをuniqueにする
+    #         address = addresses.query.filter_by(name=name).first().address
+    #     except:
+    #         print(f"{name}そんなものはない")
+    wetnesse_array = []
+    supply_array = []
+    temperature_array = []
+    humidity_array = []
+    # 指定されたaddressのデータを取得
+    if address:
+        wetness_data = wetness_value.query.filter_by(address=address).all()
+        supply_data = water_supply.query.filter_by(address=address, type=1).all()
+        temperature_data = temperature_value.query.filter_by(address=address).all()
+        humidity_data = humidity_value.query.filter_by(address=address).all()
+        for v in wetness_data:
+            wetnesse_array.append({"value":v.value, "timestamp":v.timestamp})
+        for v in supply_data:
+            supply_array.append({"type":v.type, "timestamp":v.timestamp})
+        for v in temperature_data:
+            temperature_array.append({"value":v.value, "timestamp":v.timestamp})
+        for v in humidity_data:
+            humidity_array.append({"value":v.value, "timestamp":v.timestamp})
+    else:
+        return f"""
+        <html>
+        <head>
+        </head>
+        <body>
+        <h1>Watering</h1>
+        <p>addressを指定してください</p>
+        <form action="/" method="get">
+            <input type="text" name="address" placeholder="例)1" required>
+            <input type="submit" value="submit">
+        </form>
+        <h2>Wetness Value</h2>
+        <div id="wetness_value"><!-- ここにグラフを表示する --></div>
+        <h2>Temperature Value</h2>
+        <div id="temperature_value"><!-- ここにグラフを表示する --></div>
+        <h2>Humidity Value</h2>
+        <div id="humidity_value"><!-- ここにグラフを表示する --></div>
+        </body>
+        """
+    print("--------------------")
+    print(f"wetness_values : {wetnesse_array}")
+    print("--------------------")
+    print(f"supply_values : {supply_array}")
+    print("--------------------")
+    print(f"temperature_values : {temperature_array}")
+    print("--------------------")
+    print(f"humidity_values : {humidity_array}")
+    print("--------------------")
+    # https://cdn.plot.ly/plotly-latest.min.js を使用してグラフを表示
+    # wetness_value, temperature_value, humidity_valueのデータを取得
+    # それぞれのaddressごとにデータを取得
+    return f"""
+    <html>
+        <head>
+            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        </head>
+        <body>
+            <h1>Watering</h1>
+            <p>addressを指定してください</p>
+            <form action="/" method="get">
+                <input type="text" name="address" placeholder="例)1" value="{address}" required>
+                <input type="submit" value="submit">
+            </form>
+            <h2>Wetness Value</h2>
+            <div id="wetness_value"><!-- ここにグラフを表示する --></div>
+            <h2>Temperature Value</h2>
+            <div id="temperature_value"><!-- ここにグラフを表示する --></div>
+            <h2>Humidity Value</h2>
+            <div id="humidity_value"><!-- ここにグラフを表示する --></div>
+            <script>
+                var wetness_value = [{{
+                    x: [{','.join([f'"{v["timestamp"]}"' for v in wetnesse_array])}],
+                    y: [{','.join([str(v["value"]) for v in wetnesse_array])}],
+                    mode: 'lines+markers',
+                    type: 'scatter',
+                }}];
+                var supply_value = [{{
+                    x: [{','.join([f'"{v["timestamp"]}"' for v in supply_array])}],
+                    y: [{','.join([str(v["type"]) for v in supply_array])}],
+                    mode: 'markers',
+                    type: 'scatter',
+                }}];
+                var temperature_value = [{{
+                    x: [{','.join([f'"{v["timestamp"]}"' for v in temperature_array])}],
+                    y: [{','.join([str(v["value"]) for v in temperature_array])}],
+                    mode: 'lines+markers',
+                    type: 'scatter',
+                }}];
+                var humidity_value = [{{
+                    x: [{','.join([f'"{v["timestamp"]}"' for v in humidity_array])}],
+                    y: [{','.join([str(v["value"]) for v in humidity_array])}],
+                    mode: 'lines+markers',
+                    type: 'scatter',
+                }}];
+                var layout = {{
+                    hovermode:'closest',
+                    autosize: false,
+                    title: 'Wetness Value',
+                    xaxis: {{
+                        title: 'timestamp'
+                    }},
+                    yaxis: {{
+                        title: 'value'
+                    }}
+                }};
+                var wetness_value_data = wetness_value.concat(supply_value);
+
+                Plotly.newPlot('wetness_value', wetness_value_data, layout);
+                Plotly.newPlot('temperature_value', temperature_value, layout);
+                Plotly.newPlot('humidity_value', humidity_value, layout);
+            </script>
+        </body>
+    </html>
+
+    """
+
+
 
 # timestampを取得 YYYY/MM/DD HH:MM:SS
 def get_timestamp():
