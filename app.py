@@ -39,7 +39,7 @@ class humidity_value(db.Model):
 class addresses(db.Model):
     __tablename__ = 'addresses'
     address = db.Column(db.Integer, unique=True, primary_key=True)
-    name = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, unique=True, nullable=False)
 
 class water_supply(db.Model):
     __tablename__ = 'water_supply'
@@ -76,6 +76,7 @@ def index():
     # addressが指定されている場合は、そのaddressのデータを取得
     # 指定されていない場合は、全addressのデータを取得
     address = request.args.get('address')
+    name = request.args.get('name')
 
     # # ,区切りでaddressを取得
     # if designated_addresses:
@@ -86,16 +87,14 @@ def index():
 
     # name = request.args.get('name')
     print(f"addresses : {address}")
-    # print(f"name : {name}")
-    # if not address and name: # nameのみ
-    #     print(f"nameだけだお")
-    #     # name -> address
-    #     try:
-    #         # nameがuniqueじゃない場合、最初に見つかったaddressを取得 <- 問題あり
-    #         # 解決）nameをuniqueにする
-    #         address = addresses.query.filter_by(name=name).first().address
-    #     except:
-    #         print(f"{name}そんなものはない")
+    print(f"name : {name}")
+    if not address and name: # nameのみ
+        print(f"nameだけだお")
+        # name -> address
+        try:
+            address = addresses.query.filter_by(name=name).first().address
+        except:
+            print(f"{name}そんなものはない")
     wetnesse_array = []
     supply_array = []
     temperature_array = []
@@ -121,10 +120,12 @@ def index():
         </head>
         <body>
         <h1>Watering</h1>
-        <p>addressを指定してください</p>
+        <p>address or nameを指定してください</p>
+        <p>addressが優先されます</p>
         <form action="/" method="get">
-            <input type="text" name="address" placeholder="例)1" required>
-            <input type="submit" value="submit">
+            <p>address : <input type="text" name="address" placeholder="例) 1"></p>
+            <p>name : <input type="text" name="name" placeholder="例）office"></p>
+            <p><input type="submit" value="submit"></p>
         </form>
         <h2>Wetness Value</h2>
         <div id="wetness_value"><!-- ここにグラフを表示する --></div>
@@ -134,15 +135,15 @@ def index():
         <div id="humidity_value"><!-- ここにグラフを表示する --></div>
         </body>
         """
-    print("--------------------")
-    print(f"wetness_values : {wetnesse_array}")
-    print("--------------------")
-    print(f"supply_values : {supply_array}")
-    print("--------------------")
-    print(f"temperature_values : {temperature_array}")
-    print("--------------------")
-    print(f"humidity_values : {humidity_array}")
-    print("--------------------")
+    # print("--------------------")
+    # print(f"wetness_values : {wetnesse_array}")
+    # print("--------------------")
+    # print(f"supply_values : {supply_array}")
+    # print("--------------------")
+    # print(f"temperature_values : {temperature_array}")
+    # print("--------------------")
+    # print(f"humidity_values : {humidity_array}")
+    # print("--------------------")
     # https://cdn.plot.ly/plotly-latest.min.js を使用してグラフを表示
     # wetness_value, temperature_value, humidity_valueのデータを取得
     # それぞれのaddressごとにデータを取得
@@ -153,10 +154,12 @@ def index():
         </head>
         <body>
             <h1>Watering</h1>
-            <p>addressを指定してください</p>
+            <p>address or nameを指定してください</p>
+            <p>addressが優先されます</p>
             <form action="/" method="get">
-                <input type="text" name="address" placeholder="例)1" value="{address}" required>
-                <input type="submit" value="submit">
+                <p>address : <input type="text" name="address" placeholder="例) 1" value="{address}" ></p>
+                <p>name : <input type="text" name="name" placeholder="例）office" value="{name}" ></p>
+                <p><input type="submit" value="submit"></p>
             </form>
             <h2>Wetness Value</h2>
             <div id="wetness_value"><!-- ここにグラフを表示する --></div>
