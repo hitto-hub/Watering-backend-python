@@ -83,6 +83,7 @@ class instructions(db.Model):
 with app.app_context():
     db.create_all()
 
+weekdays_set = ["mon", "tue", "wed", "thu", "fri", "sat", "sun", "all"]
 # # valを使ってグラフを表示する
 # @app.route('/')
 # def index():
@@ -1065,6 +1066,20 @@ def set_watering_regular(address):
     time_hour = request.json["time_hour"]
     time_minutes = request.json["time_minutes"]
     weekday = request.json["weekday"]
+    # 変数チェック
+    if time_hour < 0 or time_hour > 23 and time_minutes < 0 or time_minutes > 59:
+        return {
+            "status": False,
+            "message": "time is invalid",
+            "time_hour": time_hour,
+            "time_minutes": time_minutes
+        }
+    if weekday not in weekdays_set:
+        return {
+            "status": False,
+            "message": "weekday is invalid",
+            "weekday": weekday
+        }
     if not address_exists(address):
         return {
             "status": False,
