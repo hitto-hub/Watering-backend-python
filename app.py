@@ -1,11 +1,18 @@
 from datetime import datetime
 from flask import Flask, g, request, render_template
 from flask_sqlalchemy import SQLAlchemy
+from flask_apscheduler import APScheduler
 from zoneinfo import ZoneInfo
 
+class Config:
+    SCHEDULER_API_ENABLED = True
+
+scheduler = APScheduler()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
+app.config.from_object(Config())
+scheduler.init_app(app)
 
 # データベースのテーブルを作成
 class wetness_value(db.Model):
@@ -1050,5 +1057,31 @@ def delete_watering_regular(address):
             "message": "failed delete watering regular"
         }
 
+# 毎分実行
+@scheduler.task('cron', id='do_watering_regular_execution', minute='*')
+def watering_regular_execution():
+    with scheduler.app.app_context():
+        watering_regular_data = watering_regular.query.all()
+        for data in watering_regular_data:
+            time_hour = data.time_hour
+            time_minutes = data.time_minutes
+            weekday = data.weekday
+            address = data.address
+            timestamp = get_timestamp()
+            # 曜日チェック
+            if weekday == "all" or datetime.now().strftime('%a').lower() == weekday:
+                # 時間チェック
+                if int(datetime.now().strftime('%H')) == time_hour and int(datetime.now().strftime('%M')) == time_minutes:
+                    # 給水処理
+                    try:
+                        print(f"[{get_timestamp()} info] address:{address} watering regular execution")
+                        cre = instructions(timestamp = timestamp, instruction = 1, address = address)
+                        db.session.add(cre)
+                        db.session.commit()
+                    except:
+                        print("failed water supply")
+                        print(get_timestamp())
+
+scheduler.start()
 if __name__ == '__main__':
     app.run(threaded=True)
