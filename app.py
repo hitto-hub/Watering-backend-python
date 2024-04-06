@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask, g, request
+from flask import Flask, g, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from zoneinfo import ZoneInfo
 
@@ -57,112 +57,15 @@ class instructions(db.Model):
     address = db.Column(db.Integer, nullable=False)
     instruction = db.Column(db.Integer, nullable=False)
 
-# class Data(db.Model):
-#     __tablename__ = 'data'
-#     id = db.Column(db.Integer, unique=True, primary_key=True)
-#     timestamp = db.Column(db.String, nullable=False)
-#     val = db.Column(db.Integer, nullable=False)
-#     def __repr__(self):
-#         return '<Data %r>' % self.val
-# class NoticeData(db.Model):
-#     __tablename__ = 'notice_data'
-#     id = db.Column(db.Integer, unique=True, primary_key=True)
-#     timestamp = db.Column(db.String, nullable=False)
-#     notice = db.Column(db.Integer, nullable=False)
-#     def __repr__(self):
-#         return '<NoticeData %r>' % self.notice
-# class FlagData(db.Model):
-#     __tablename__ = 'flag_data'
-#     id = db.Column(db.Integer, unique=True, primary_key=True)
-#     timestamp = db.Column(db.String, nullable=False)
-#     flag = db.Column(db.Integer, nullable=False)
-#     def __repr__(self):
-#         return '<FlagData %r>' % self.flag
-
 # テーブルを作成
 with app.app_context():
     db.create_all()
 
 weekdays_set = ["mon", "tue", "wed", "thu", "fri", "sat", "sun", "all"]
-# # valを使ってグラフを表示する
-# @app.route('/')
-# def index():
-#     return '''
-#     <html>
-#         <head>
-#             <title>Watering</title>
-#             <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-#         </head>
-#         <body>
-#             <h1>Watering</h1>
-#             <div id="graph"></div>
-#             <script>
-#                 fetch('/api/val')
-#                 .then(response => response.json())
-#                 .then(data => {
-#                     const x = data.data.slice(-1000).map(v => new Date(v.timestamp));
-#                     const y = data.data.slice(-1000).map(v => v.val);
-#                     const trace = {
-#                         x: x,
-#                         y: y,
-#                         type: 'scatter'
-#                     };
-#                     fetch('/api/notice')
-#                     .then(response => response.json())
-#                     .then(noticeData => {
-#                         const notice = noticeData.data.filter(v => v.notice === 1);
-#                         const noticeX = notice.map(v => new Date(v.timestamp));
-#                         const noticeY = notice.map(v => 0);
-#                         const noticeTrace = {
-#                             x: noticeX,
-#                             y: noticeY,
-#                             mode: 'markers',
-#                             type: 'scatter',
-#                             name: 'Notice'
-#                         };
-#                         const layout = {
-#                             title: 'Graph',
-#                             xaxis: {
-#                                 title: 'Time',
-#                                 automargin: true
-#                             },
-#                             yaxis: {
-#                                 title: 'Value'
-#                             }
-#                         };
-#                         Plotly.newPlot('graph', [trace, noticeTrace], layout);
-#                     });
-#                 });
-#             </script>
-#         </body>
-#     </html>
-#     '''
-
-# #delete all data
-# @app.route('/api', methods=['DELETE'])
-# def delete_all():
-#     try:
-#         Data.query.delete()
-#         NoticeData.query.delete()
-#         FlagData.query.delete()
-#         db.session.commit()
-#         return 'delete all data\n'
-#     except:
-#         return 'delete all data failed\n'
-# # GETメソッドでデータを取得
-# @app.route('/api/val', methods=['GET'])
-# def get_val():
-#     val = Data.query.all()
-#     return {
-#         "num_results": f"{len(val)}",
-#         "data": [
-#             {
-#                 "id": v.id,
-#                 "timestamp": v.timestamp,
-#                 "val": v.val
-#             }
-#             for v in val
-#         ]
+# グラフを表示する
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # timestampを取得 YYYY/MM/DD HH:MM:SS
 def get_timestamp():
