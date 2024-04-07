@@ -239,7 +239,7 @@ def get_minimum_free_address():
             break
     return minimum_free_address
 
-@app.route('/api/', methods=['POST'])
+@app.route('/api/', methods=['GET'])
 def func():
     return 'hogehoge'
 
@@ -271,7 +271,14 @@ def get_all_address():
 @app.route('/api/addresses/<int:address>', methods=['GET'])
 def get_address(address):
     try:
-        address = addresses.query.filter_by(address=address).first()
+        try:
+            address = addresses.query.filter_by(address=address).first()
+        except:
+            return {
+                "status": False,
+                "message": "address does not exist",
+                "address": address
+            }
         return {
             "status": True,
             "message": "successfully get address",
@@ -283,6 +290,30 @@ def get_address(address):
             "status": False,
             "message": "failed get address",
             "address": address
+        }
+
+@app.route('/api/addresses/<string:name>', methods=['GET'])
+def get_address_name(name):
+    try:
+        try:
+            address = addresses.query.filter_by(name=name).first()
+        except:
+            return {
+                "status": False,
+                "message": "name does not exist",
+                "name": name
+            }
+        return {
+            "status": True,
+            "message": "successfully get address",
+            "address": address.address,
+            "name": address.name
+        }
+    except:
+        return {
+            "status": False,
+            "message": "failed get address",
+            "name": name
         }
 
 # 新規address配布
